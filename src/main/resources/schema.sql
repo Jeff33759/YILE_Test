@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS product(
+	id IDENTITY PRIMARY KEY,
+	chn_name NVARCHAR,
+	spec NVARCHAR
+);

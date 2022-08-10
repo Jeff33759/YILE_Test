@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>YILE_Test</title>
+
+	<!-- bs5 -->
+	<link rel="stylesheet" type="text/css" href="../package/bootstrap-5.1.1/css/bootstrap.min.css">
+	<script src="../package/bootstrap-5.1.1/js/bootstrap.bundle.min.js"></script>
+
+</head>
+<body>
+
+	<div class="container">
+		<div class="row justify-content-center m-3">
+			<div id="table-cont" class="col-6">
+				<table class="table table-striped border border-2 border-dark">
+					<thead>
+						<tr>
+							<th scope="col">Id</th>
+							<th scope="col">中文名稱</th>
+							<th scope="col">規格</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">1</th>
+							<td>Mark</td>
+							<td>Otto</td>
+						</tr>
+						<tr>
+							<th scope="row">2</th>
+							<td>Jacob</td>
+							<td>Thornton</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="row justify-content-center m-3">
+			<div class="col-3">
+				<div class="btn btn-primary w-100" onclick="turnPage();">Back</div>
+			</div>
+		</div>
+	</div>
+
+<script>
+	
+	getListData();
+	
+	function getListData() {
+		fetch("http://localhost:8080/yile/prods",{
+			method:'GET'
+		}).then(res => {
+			return res.json();
+		}).then(myJson=>{
+			appendList(myJson);
+		}).catch(function(err) {
+			alert("error");
+		});
+		
+		function appendList(josnObj){
+			let tabE = document.getElementById("table-cont");
+			let prodArr = josnObj.proArr;
+			let str = "";
+			str += `
+			<table class="table table-striped border border-2 border-dark">
+				<thead>
+					<tr>
+						<th scope="col">Id</th>
+						<th scope="col">中文名稱</th>
+						<th scope="col">規格</th>
+					</tr>
+				</thead>
+				<tbody>`;
+
+			prodArr.forEach(ele => {
+				str +=`
+					<tr>
+						<th scope="row">${ele.id}</th>
+						<td>${ele.chnName}</td>
+						<td>${ele.spec}</td>
+					</tr>`;
+			});
+			str += `
+				</tbody>
+			</table>`;
+			tabE.innerHTML = str;
+		}
+	}
+
+	function turnPage(){
+		document.location.href=`http://localhost:8080/yile/form`;
+	}
+</script>
+	
+</body>
+</html>

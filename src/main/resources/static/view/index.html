@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>YILE_Test</title>
+
+	<!-- bs5 -->
+	<link rel="stylesheet" type="text/css" href="../package/bootstrap-5.1.1/css/bootstrap.min.css">
+	<script src="../package/bootstrap-5.1.1/js/bootstrap.bundle.min.js"></script>
+
+	<!-- crypto-js -->
+	<script src="../package/crypto-js/crypto.min.js"></script>
+	
+</head>
+<body>
+
+	<div class="container mt-5">
+		<div class="row justify-content-center">
+			<form id="prod-form" class="col-6 px-3 pb-3 border border-dark border-2">
+				<div class="mb-2 fs-5 fw-bold text-center">Form for adding products</div>
+				<div class="mb-3">
+				  <label for="chn-name" class="form-label">Product chinese name.</label>
+				  <input id="chn-name" class="form-control" placeholder="chn-name">
+				</div>
+				<div class="mb-3">
+				  <label for="spec" class="form-label">Product spec.</label>
+				  <input id="spec" class="form-control" placeholder="spec">
+				</div>
+				<div class="btn btn-primary" onclick="sendData();">Submit</div>
+			</form>
+
+		</div>
+	</div>
+
+</body>
+<script>
+
+	const keyStr = "yiletestingfromjeffhuang";
+
+	function sendData(){
+		let chnNameVal = document.getElementById("chn-name").value;
+		let specVal = document.getElementById("spec").value;
+		let json = {pro:{chnName:chnNameVal,spec:specVal}};
+		let jsonStr = JSON.stringify(json);
+		let aesEncStr = encodeData(keyStr,jsonStr);
+
+		fetch("http://localhost:8080/yile/form",{
+			method: 'POST',
+			body: aesEncStr,
+			headers: {
+    			'Content-Type': 'text/html; charset=utf-8'
+  			}
+		}).then(function(response) {
+			if(response.status==201){
+				let reUrl = response.headers.get('location');
+				document.location.href=reUrl;
+			}
+		}).catch(function(err) {
+			alert("error");
+		});
+
+		function encodeData(keystr,data){
+			let key = CryptoJS.enc.Utf8.parse(keystr);
+			let srcs = CryptoJS.enc.Utf8.parse(data);
+			let encrypted = CryptoJS.AES.encrypt(
+					srcs, key, {mode:CryptoJS.mode.ECB,padding: CryptoJS.pad.Pkcs7});
+			return encrypted.toString();
+		}
+
+	}
+
+
+</script>
+</html>
