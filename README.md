@@ -1,6 +1,12 @@
 # YILE_Test
 考試題目
 
+## 環境、版本
+
+開發與運行環境: JDK-8
+
+SpringBoot版本: 2.7.2
+
 ## DEMO說明
 
 預設RUN在8080 Port。
