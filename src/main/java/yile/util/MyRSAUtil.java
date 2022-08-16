@@ -60,7 +60,8 @@ public class MyRSAUtil {
         KeyFactory kf;
 		try {
 			kf = KeyFactory.getInstance("RSA");
-			PKCS8EncodedKeySpec keySpecPKCS8 = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyContent));
+			PKCS8EncodedKeySpec keySpecPKCS8 = 
+					new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyContent));
 			RSAPrivateKey rsaPrivKey = (RSAPrivateKey)kf.generatePrivate(keySpecPKCS8);
 			return rsaPrivKey;
 		} catch (Exception e) {
