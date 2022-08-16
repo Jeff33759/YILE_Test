@@ -19,7 +19,9 @@
 	<div class="container mt-5">
 		<div class="row justify-content-center">
 			<form id="prod-form" class="col-6 px-3 pb-3 border border-dark border-2">
-				<div class="mb-2 fs-5 fw-bold text-center">Form for adding products</div>
+				<div class="mb-2 fw-bold text-center">
+					Form for adding product by <span class="text-danger">AES</span> encrypt.
+				</div>
 				<div class="mb-3">
 				  <label for="chn-name" class="form-label">Product chinese name.</label>
 				  <input id="chn-name" class="form-control" placeholder="chn-name">
@@ -28,7 +30,11 @@
 				  <label for="spec" class="form-label">Product spec.</label>
 				  <input id="spec" class="form-control" placeholder="spec">
 				</div>
-				<div class="btn btn-primary" onclick="sendData();">Submit</div>
+				
+				<div class="row justify-content-between mx-1">
+					<div class="col-3 btn btn-primary" onclick="sendData();">Submit</div>
+					<div class="col-3 btn btn-primary" onclick="document.location.href='http://localhost:8080/yile/rsaform';">RSA-Page</div>
+				</div>
 			</form>
 
 		</div>
@@ -37,39 +43,43 @@
 </body>
 <script>
 
-	const keyStr = "yiletestingfromjeffhuang";
+	const secret = "yiletestingfromjeffhuang";
 
 	function sendData(){
 		let chnNameVal = document.getElementById("chn-name").value;
 		let specVal = document.getElementById("spec").value;
 		let json = {pro:{chnName:chnNameVal,spec:specVal}};
 		let jsonStr = JSON.stringify(json);
-		let aesEncStr = encodeData(keyStr,jsonStr);
+		let aesEncStr = aesEncryptData(secret,jsonStr);
 
-		fetch("http://localhost:8080/yile/form",{
+		fetch("http://localhost:8080/yile/aesform",{
 			method: 'POST',
 			body: aesEncStr,
 			headers: {
     			'Content-Type': 'text/html; charset=utf-8'
   			}
-		}).then(function(response) {
-			if(response.status==201){
-				let reUrl = response.headers.get('location');
+		}).then(res => {
+			if(res.status==201){
+				let reUrl = res.headers.get('location');
 				document.location.href=reUrl;
 			}
 		}).catch(function(err) {
 			alert("error");
 		});
 
-		function encodeData(keystr,data){
-			let key = CryptoJS.enc.Utf8.parse(keystr);
+		function aesEncryptData(secret,data){
+			// 把金鑰字串轉換成UTF-8編碼字串(處理中文)
+			let key = CryptoJS.enc.Utf8.parse(secret);
+			// 把想轉的資料字串，轉換成UTF-8編碼字串(處理中文)
 			let srcs = CryptoJS.enc.Utf8.parse(data);
+			// 開始加密
 			let encrypted = CryptoJS.AES.encrypt(
 					srcs, key, { 
-						mode: CryptoJS.mode.ECB ,
-						padding: CryptoJS.pad.Pkcs7
+						mode: CryptoJS.mode.ECB , //加密模式為ECB
+						padding: CryptoJS.pad.Pkcs7 //設定AES的填充模式為Pkcs7
 						}
 					);
+			// 將加密後的AES物件，轉為Base64字串
 			return encrypted.toString();
 		}
 

@@ -1,11 +1,5 @@
 package yile.util;
 
-import java.util.Base64;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,32 +10,51 @@ import yile.model.po.Product;
 
 @Component
 public class MyUtil {
+
 	
 	@Autowired
 	private ObjectMapper objectMapper;
 	
-	private String decryptKey = "yiletestingfromjeffhuang";
+	@Autowired
+	private MyAESUtil aesUtil;
 	
-	private String algoStr = "AES/ECB/PKCS5Padding";
+	@Autowired
+	private MyRSAUtil rsaUtil;
+	
+	
 	
 	/**
 	 * 將AES加密後的字串進行解密，並反序列化為POJO。
 	 * */
 	public ProductReq handleTheAESStrToObj(String encryptStr) throws Exception {  
-		String decryptStr = decryptAES(encryptStr);
+		String decryptStr = aesUtil.decryptAES(encryptStr);
 		return objectMapper.readValue(decryptStr, ProductReq.class);
 	}
 	
-	private String decryptAES(String encryptStr) throws Exception {
-		byte[] encryptBytes = Base64.getDecoder().decode(encryptStr);
-		KeyGenerator keyGen = KeyGenerator.getInstance("AES");  
-        keyGen.init(128); 
-        Cipher cipher = Cipher.getInstance(algoStr);  
-        cipher.init(Cipher.DECRYPT_MODE, 
-        		new SecretKeySpec(decryptKey.getBytes(), "AES"));  
-        byte[] decryptBytes = cipher.doFinal(encryptBytes);  
-        return new String(decryptBytes);  
+	/**
+	 * 得到RSA的公鑰。
+	 * */
+	public String getRSAPubKey() {
+		return rsaUtil.getRsaPubKeyStr();
 	}
+	
+	/**
+	 * 使用AES密鑰2解密，然後轉化為POJO。
+	 * */
+	public ProductReq handleTheAESStr2ToObj(String encryptStr) throws Exception {  
+		String decryptStr = aesUtil.decryptAESBySecret2(encryptStr);
+		return objectMapper.readValue(decryptStr, ProductReq.class);
+	}	
+
+	/**
+	 * 將RSA加密後的字串進行解密，並反序列化為AES密鑰字串，
+	 * 並賦值給AESUtil的成員變數供使用。
+	 * */
+	public void handleTheRSAStrToAESSecretAndSetIt(String encryptStr) throws Exception {  
+		String decryptAESKeyStr = rsaUtil.decryptRSA(encryptStr);
+		aesUtil.setAESSecret2(decryptAESKeyStr);
+	}	
+
 	
 	public Product convertDtoToPo(ProductReq dto) {
 		Product product = new Product();

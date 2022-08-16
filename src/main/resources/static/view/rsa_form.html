@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>YILE_Test</title>
+
+	<!-- bs5 -->
+	<link rel="stylesheet" type="text/css" href="../package/bootstrap-5.1.1/css/bootstrap.min.css">
+	<script src="../package/bootstrap-5.1.1/js/bootstrap.bundle.min.js"></script>
+
+	<!-- crypto-js -->
+	<script src="../package/crypto-js/crypto.min.js"></script>
+	
+	<!-- jsencrypt -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/2.3.1/jsencrypt.min.js"></script>
+	
+</head>
+<body>
+
+	<div class="container mt-5">
+		<div class="row justify-content-center">
+			<form id="prod-form" class="col-6 px-3 pb-3 border border-dark border-2">
+				<div class="mb-2 fw-bold text-center">
+					Form for adding product by <span class="text-danger">RSA+AES</span> encrypt.
+				</div>
+				<div class="mb-3">
+				  <label for="chn-name" class="form-label">Product chinese name.</label>
+				  <input id="chn-name" class="form-control" placeholder="chn-name">
+				</div>
+				<div class="mb-3">
+				  <label for="spec" class="form-label">Product spec.</label>
+				  <input id="spec" class="form-control" placeholder="spec">
+				</div>
+				<div class="row justify-content-between mx-1">
+					<div class="col-3 btn btn-primary" onclick="sendData();">Submit</div>
+					<div class="col-3 btn btn-primary" onclick="document.location.href='http://localhost:8080/yile/aesform';">AES-Page</div>
+				</div>
+			</form>
+
+		</div>
+	</div>
+
+</body>
+<script>
+	
+	let aesSecret2 = "yiletestingbyjeffhuang22";
+	let rsaPubKeyStr;
+	
+	getRSAPubKeyFromServerAndSendAESKeyToServer();
+
+	function sendData(){
+		let chnNameVal = document.getElementById("chn-name").value;
+		let specVal = document.getElementById("spec").value;
+		let json = {pro:{chnName:chnNameVal,spec:specVal}};
+		let jsonStr = JSON.stringify(json);
+		let aesEncStr2 = aesEncryptData(aesSecret2,jsonStr);
+
+		fetch("http://localhost:8080/yile/rsaform",{
+			method: 'POST',
+			body: aesEncStr2,
+			headers: {
+    			'Content-Type': 'text/html; charset=utf-8'
+  			}
+		}).then(res => {
+			if(res.status==201){
+				let reUrl = res.headers.get('location');
+				document.location.href=reUrl;
+			}
+		}).catch(function(err) {
+			alert("error");
+		});
+
+		function aesEncryptData(secret,data){
+			// 把金鑰字串轉換成UTF-8編碼字串(處理中文)
+			let key = CryptoJS.enc.Utf8.parse(secret);
+			// 把想轉的資料字串，轉換成UTF-8編碼字串(處理中文)
+			let srcs = CryptoJS.enc.Utf8.parse(data);
+			// 開始加密
+			let encrypted = CryptoJS.AES.encrypt(
+					srcs, key, { 
+						mode: CryptoJS.mode.ECB , //加密模式為ECB
+						padding: CryptoJS.pad.Pkcs7 //設定AES的填充模式為Pkcs7
+						}
+					);
+			// 將加密後的AES物件，轉為Base64字串
+			return encrypted.toString();
+		}
+
+	}
+	
+	function getRSAPubKeyFromServerAndSendAESKeyToServer(){
+		fetch("http://localhost:8080/yile/rsapubkey",{
+			method: 'GET',
+			headers: {
+    			'Content-Type': 'text/html; charset=utf-8'
+  			}
+		}).then(res=>{
+			return res.text(); //將會得到PKCS8的RSA公鑰
+		}).then(keyStr=>{
+			rsaPubKeyStr = keyStr;
+			sendAESKeyToServer();
+		}).catch(function(err) {
+			alert("error");
+		});
+	
+		function sendAESKeyToServer(){
+
+          	let rsaEncryptedAESKey = rsaEncryptData(rsaPubKeyStr,aesSecret2);
+
+			fetch("http://localhost:8080/yile/aessecret",{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'text/html; charset=utf-8'
+				},
+				body: rsaEncryptedAESKey
+			}).then(res=>{
+				res.status == 200 ? 
+						alert("Exchange key successfully!!") :
+							alert("Exchange key failed...");
+			}).catch(function(err) {
+				alert("Exchange key failed...");
+			});
+			
+//			將資料以RSA加密，回傳加密後的Base64字串
+			function rsaEncryptData(pubKey, data){
+				let encryptor = new JSEncrypt();
+				encryptor.setPublicKey(pubKey);
+				return encryptor.encrypt(data);
+			}
+			
+		}
+	}
+
+</script>
+</html>

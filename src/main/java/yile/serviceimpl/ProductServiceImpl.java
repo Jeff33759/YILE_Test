@@ -33,8 +33,15 @@ public class ProductServiceImpl implements ProductService{
 	}
 
 	@Override
-	public void createProduct(String aesStr) throws Exception {
+	public void createProductWithAES(String aesStr) throws Exception {
 		ProductReq prodReq = myUtil.handleTheAESStrToObj(aesStr);
+		Product newProd = myUtil.convertDtoToPo(prodReq);
+		productRepo.save(newProd);
+	}
+
+	@Override
+	public void createProductWithAES2(String aesStr) throws Exception {
+		ProductReq prodReq = myUtil.handleTheAESStr2ToObj(aesStr);
 		Product newProd = myUtil.convertDtoToPo(prodReq);
 		productRepo.save(newProd);
 	}
