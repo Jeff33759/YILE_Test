@@ -52,7 +52,7 @@ JDBC URL為 : jdbc:h2:./db/h2DB
 2. 只用bootStrap及javaScript實現前端功能(AES加密功能引入crypto-js套件、RSA加密功能引入jsencrypt套件)。
 3. 加密實作1-將表格資料以AES加密後傳給後端，後端再AES解密，並新增進資料庫中。
 4. 加密實作2-前端先跟後端要RSA公鑰，接著在前端將AES密鑰以RSA加密後，傳到後端以RSA私鑰解密出AES密鑰，之後兩端溝通還是以AES加密傳輸為主。
-5. 後端以Spring MVC架構撰寫，前後端沒有分離。
+5. 後端以Spring MVC架構撰寫，前後端沒有分離部屬，為單體式應用。
 6. spring-data-jpa實現CRUD。
 7. 其他題目要求的一些行為，例如轉址、列表等等...
 
